@@ -66,9 +66,11 @@ export function Navbar() {
               )}
             </Button>
           </Link>
-          <Button className="bg-revibe hover:bg-revibe/90 text-white">
-            <User size={18} className="mr-2" /> Sign In
-          </Button>
+          <Link to="/sign-in">
+            <Button className="bg-revibe hover:bg-revibe/90 text-white">
+              <User size={18} className="mr-2" /> Sign In
+            </Button>
+          </Link>
         </div>
 
         {/* Mobile Menu Button */}
@@ -123,9 +125,15 @@ export function Navbar() {
             >
               About Us
             </Link>
-            <Button className="mt-2 bg-revibe hover:bg-revibe/90 text-white">
-              <User size={18} className="mr-2" /> Sign In
-            </Button>
+            <Link 
+              to="/sign-in" 
+              className="mt-2 w-full"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              <Button className="w-full bg-revibe hover:bg-revibe/90 text-white">
+                <User size={18} className="mr-2" /> Sign In
+              </Button>
+            </Link>
           </div>
         )}
       </div>

@@ -12,6 +12,7 @@ import BuyPage from "./pages/BuyPage";
 import SellPage from "./pages/SellPage";
 import CartPage from "./pages/CartPage";
 import NotFound from "./pages/NotFound";
+import SignInPage from "./pages/SignInPage";
 
 // Create a new QueryClient
 const queryClient = new QueryClient({
@@ -34,6 +35,7 @@ const App = () => {
               <Route path="/buy" element={<BuyPage />} />
               <Route path="/sell" element={<SellPage />} />
               <Route path="/cart" element={<CartPage />} />
+              <Route path="/sign-in" element={<SignInPage />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
