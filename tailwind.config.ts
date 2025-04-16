@@ -61,6 +61,19 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				// Custom colors for our refurbished vehicle app
+				revibe: {
+					DEFAULT: '#1A95F4', // Primary blue accent
+					foreground: '#ffffff',
+					secondary: '#32F4C0', // Secondary teal accent
+					'secondary-foreground': '#1A1F2C',
+					muted: '#404551',
+					'muted-foreground': '#9AA2B5',
+					dark: '#1A1F2C', // Main dark background
+					'dark-foreground': '#F6F6F7',
+					"darker": "#15181F", // Darker shade for cards/etc
+					accent: '#F98E2D', // Orange accent for CTAs
 				}
 			},
 			borderRadius: {
@@ -84,11 +97,24 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'pulse-glow': {
+					'0%, 100%': { 
+						boxShadow: '0 0 5px 0 rgba(26, 149, 244, 0.4)' 
+					},
+					'50%': { 
+						boxShadow: '0 0 15px 5px rgba(26, 149, 244, 0.7)'
+					}
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'pulse-glow': 'pulse-glow 2s infinite',
+			},
+			backgroundImage: {
+				'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+				'car-pattern': "url('/car-pattern.svg')",
 			}
 		}
 	},
