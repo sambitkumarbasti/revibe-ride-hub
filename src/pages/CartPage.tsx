@@ -1,21 +1,74 @@
 
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { useCart } from '@/context/CartContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Trash2, Plus, Minus, ArrowLeft, CreditCard, ShoppingCart } from 'lucide-react';
 import { Vehicle } from '@/types/vehicle';
+import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 const CartPage = () => {
   const { items, removeItem, updateQuantity, totalPrice, clearCart } = useCart();
   const [checkoutStep, setCheckoutStep] = useState<'cart' | 'payment' | 'confirmation'>('cart');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
 
   // Function to handle checkout
-  const handleCheckout = (e: React.FormEvent) => {
+  const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
-    setCheckoutStep('confirmation');
+    setIsSubmitting(true);
+
+    try {
+      // Get current user session
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError || !session) {
+        toast.error("Please sign in to complete your purchase");
+        navigate('/sign-in');
+        return;
+      }
+
+      // Calculate final price with tax and fees
+      const finalPrice = totalPrice + totalPrice * 0.08 + 249;
+      
+      // Save order to Supabase
+      const { error } = await supabase
+        .from('orders')
+        .insert({
+          user_id: session.user.id,
+          total_price: finalPrice,
+          cart_items: items.map(item => ({
+            vehicle_id: item.vehicle.id,
+            quantity: item.quantity,
+            price: item.vehicle.price,
+            vehicle_details: {
+              make: item.vehicle.make,
+              model: item.vehicle.model,
+              year: item.vehicle.year,
+              exteriorColor: item.vehicle.exteriorColor
+            }
+          }))
+        });
+
+      if (error) {
+        console.error("Error saving order:", error);
+        toast.error("Failed to process your order. Please try again.");
+        setIsSubmitting(false);
+        return;
+      }
+      
+      // Success - proceed to confirmation
+      setCheckoutStep('confirmation');
+      toast.success("Order placed successfully!");
+    } catch (error) {
+      console.error("Checkout error:", error);
+      toast.error("An unexpected error occurred. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (items.length === 0 && checkoutStep === 'cart') {
@@ -124,21 +177,21 @@ const CartPage = () => {
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium mb-1">Card Number</label>
-                      <Input placeholder="1234 5678 9012 3456" />
+                      <Input placeholder="1234 5678 9012 3456" required />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium mb-1">Expiration Date</label>
-                        <Input placeholder="MM/YY" />
+                        <Input placeholder="MM/YY" required />
                       </div>
                       <div>
                         <label className="block text-sm font-medium mb-1">CVV</label>
-                        <Input placeholder="123" />
+                        <Input placeholder="123" required />
                       </div>
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-1">Cardholder Name</label>
-                      <Input placeholder="John Doe" />
+                      <Input placeholder="John Doe" required />
                     </div>
                   </div>
                 </div>
@@ -149,38 +202,38 @@ const CartPage = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium mb-1">First Name</label>
-                        <Input placeholder="John" />
+                        <Input placeholder="John" required />
                       </div>
                       <div>
                         <label className="block text-sm font-medium mb-1">Last Name</label>
-                        <Input placeholder="Doe" />
+                        <Input placeholder="Doe" required />
                       </div>
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-1">Address</label>
-                      <Input placeholder="123 Main St" />
+                      <Input placeholder="123 Main St" required />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div>
                         <label className="block text-sm font-medium mb-1">City</label>
-                        <Input placeholder="New York" />
+                        <Input placeholder="New York" required />
                       </div>
                       <div>
                         <label className="block text-sm font-medium mb-1">State</label>
-                        <Input placeholder="NY" />
+                        <Input placeholder="NY" required />
                       </div>
                       <div>
                         <label className="block text-sm font-medium mb-1">Zip Code</label>
-                        <Input placeholder="10001" />
+                        <Input placeholder="10001" required />
                       </div>
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-1">Phone Number</label>
-                      <Input placeholder="(123) 456-7890" />
+                      <Input placeholder="(123) 456-7890" required />
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-1">Email</label>
-                      <Input placeholder="johndoe@example.com" />
+                      <Input placeholder="johndoe@example.com" type="email" required />
                     </div>
                   </div>
                 </div>
@@ -197,9 +250,14 @@ const CartPage = () => {
                   <Button 
                     type="submit" 
                     className="bg-revibe hover:bg-revibe/90 text-white"
+                    disabled={isSubmitting}
                   >
-                    <CreditCard size={16} className="mr-2" />
-                    Complete Purchase
+                    {isSubmitting ? 'Processing...' : (
+                      <>
+                        <CreditCard size={16} className="mr-2" />
+                        Complete Purchase
+                      </>
+                    )}
                   </Button>
                 </div>
               </form>
@@ -276,14 +334,13 @@ const CartPage = () => {
             </div>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <Button 
-                asChild 
                 className="bg-revibe hover:bg-revibe/90 text-white"
                 onClick={() => {
                   clearCart();
-                  setCheckoutStep('cart');
+                  navigate('/');
                 }}
               >
-                <Link to="/">Return to Home</Link>
+                Return to Home
               </Button>
               <Button 
                 variant="outline"
