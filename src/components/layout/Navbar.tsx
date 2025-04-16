@@ -12,10 +12,11 @@ import {
   Search
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useCart } from "@/context/CartContext";
 
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [cartCount, setCartCount] = useState(0); // This will be connected to a cart context later
+  const { itemCount } = useCart(); // Get actual cart count from context
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-md">
@@ -55,12 +56,12 @@ export function Navbar() {
           <Link to="/cart">
             <Button variant="ghost" size="icon" className="relative">
               <ShoppingCart size={20} />
-              {cartCount > 0 && (
+              {itemCount > 0 && (
                 <Badge 
                   className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 bg-revibe text-white" 
                   variant="outline"
                 >
-                  {cartCount}
+                  {itemCount}
                 </Badge>
               )}
             </Button>
@@ -111,8 +112,8 @@ export function Navbar() {
             >
               <ShoppingCart size={18} className="mr-2" />
               Cart
-              {cartCount > 0 && (
-                <Badge className="ml-auto bg-revibe text-white">{cartCount}</Badge>
+              {itemCount > 0 && (
+                <Badge className="ml-auto bg-revibe text-white">{itemCount}</Badge>
               )}
             </Link>
             <Link 
